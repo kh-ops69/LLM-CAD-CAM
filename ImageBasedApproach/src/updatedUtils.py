@@ -4,8 +4,8 @@ import time
 import pyperclip
 import logging
 from PIL import Image
-from prompts import *
-from llm import *
+import updatedPrompts
+import processQuery
 
 def get_queries(path):
     """
@@ -159,43 +159,28 @@ def gui_sequence(macro_code_path, img_path, platform='mac'):
     return None if error_msg == "" else error_msg
 
 
-def get_executable_code(gen_code, error, error_iter, model, api_key, temp, query_idx, base_url, direct_code=False, refined_code=False, refined_idx = 0):
+def get_executable_code(gen_code, error, max_correction_iters, current_idx):
     """
     Tries to get an executable code
     """
 
     updated_code = gen_code
-    if direct_code:
-        for i in range(1, error_iter + 1):
-            error_prompt = get_error_prompt(updated_code, error)
-            updated_code = get_answers(model, api_key, error_prompt, temp, base_url)
-            updated_code = remove_backticks(updated_code)
-            macro_path = f"results/code/query_{query_idx}_direct_attempt_{i}.FCMacro"
-            write_macro(updated_code, macro_path)
-            # PyAutoGUI sequence
-            img_path = f"results/images/query_{query_idx}_direct_attempt_{i}.png"
-            error_msg = gui_sequence(macro_path, img_path)
+    i = 0
+    errorPresent = True
+    while i < max_correction_iters and errorPresent:
+        updated_error_prompt = updatedPrompts.get_error_prompt(updated_code, error)
+        updated_code = processQuery.get_code(updated_error_prompt)
+        updated_code = remove_backticks(updated_code)
+        macro_path = f"results/code/query_{current_idx}_direct_attempt_{i}.FCMacro"
+        write_macro(updated_code, macro_path)
+        # PyAutoGUI sequence
+        img_path = f"results/images/query_{current_idx}_direct_attempt_{i}.png"
+        error_msg = gui_sequence(macro_path, img_path)
 
-            if error_msg is not None:
-                continue
-            else:
-                break
-
-    else:
-        for i in range(1, error_iter + 1):
-            error_prompt = get_error_prompt(updated_code, error)
-            updated_code = get_answers(model, api_key, error_prompt, temp, base_url)
-            updated_code = remove_backticks(updated_code)
-            macro_path = f"results/code/query_{query_idx}_refined_{refined_idx}_attempt_{i}.FCMacro"
-            write_macro(updated_code, macro_path)
-            # PyAutoGUI sequence
-            img_path = f"results/images/query_{query_idx}_refined_{refined_idx}_attempt_{i}.png"
-            error_msg = gui_sequence(macro_path, img_path)
-
-            if error_msg is not None:
-                continue
-            else:
-                break
+        if error_msg is not None:
+            continue
+        else:
+            errorPresent = False
 
     return error_msg, i, updated_code
 
@@ -245,50 +230,50 @@ def get_captions(img_path, processor, model, human_feedback):
 
     return caption
 
-def get_refined_outputs(captions, user_query, prev_code, refine_iter, model, api_key, temp, 
-                        query_idx, error_iter, vqa_model, vqa_thresh, processor, caption_model, base_url, human_feedback):
-    """
-    Performs iterative refinement and gets the best possible output for a given user query
-    """
+# def get_refined_outputs(captions, user_query, prev_code, refine_iter, model, api_key, temp, 
+#                         query_idx, max_correction_iters, vqa_model, vqa_thresh, processor, caption_model, base_url, human_feedback):
+#     """
+#     Performs iterative refinement and gets the best possible output for a given user query
+#     """
 
-    refined_code = prev_code
-    for i in range(refine_iter):
-        print('Final Caption: ', captions)
-        if captions == 'fn' or captions == 'FN':
-            print('Stopping the refinements as asked by user... Moving to next query')
-            break
+#     refined_code = prev_code
+#     for i in range(refine_iter):
+#         print('Final Caption: ', captions)
+#         if captions == 'fn' or captions == 'FN':
+#             print('Stopping the refinements as asked by user... Moving to next query')
+#             break
 
-        feedback_reason_prompt = get_feedback_reason_prompt(captions, user_query, refined_code)
-        refined_code = get_answers(model, api_key, feedback_reason_prompt, temp, base_url)
-        refined_code = remove_backticks(refined_code)
-        macro_path = f"results/code/query_{query_idx}_refined_{i}_attempt_0.FCMacro"
-        write_macro(refined_code, macro_path)
-        # GUI sequence
-        img_path = f"results/images/query_{query_idx}_refined_{i}_attempt_0.png"
-        error_msg = gui_sequence(macro_path, img_path)
-        print('error_msg', error_msg)
-        if error_msg is not None:
-            error, success_idx, refined_code = get_executable_code(refined_code, error_msg, error_iter, model, api_key, temp, query_idx, base_url, refined_code=True, refined_idx=i)
-            if error is None:
-                img_path_for_captions = f"results/images/query_{query_idx}_refined_{i}_attempt_{success_idx}.png"
-            else:
-                print("Refinement failed... Skipping to next query")
-                # TODO: Add some placeholders to return
-                break
+#         feedback_reason_prompt = get_feedback_reason_prompt(captions, user_query, refined_code)
+#         refined_code = get_answers(model, api_key, feedback_reason_prompt, temp, base_url)
+#         refined_code = remove_backticks(refined_code)
+#         macro_path = f"results/code/query_{query_idx}_refined_{i}_attempt_0.FCMacro"
+#         write_macro(refined_code, macro_path)
+#         # GUI sequence
+#         img_path = f"results/images/query_{query_idx}_refined_{i}_attempt_0.png"
+#         error_msg = gui_sequence(macro_path, img_path)
+#         print('error_msg', error_msg)
+#         if error_msg is not None:
+#             error, success_idx, refined_code = get_executable_code(refined_code, error_msg, max_correction_iters, model, api_key, temp, query_idx, base_url, refined_code=True, refined_idx=i)
+#             if error is None:
+#                 img_path_for_captions = f"results/images/query_{query_idx}_refined_{i}_attempt_{success_idx}.png"
+#             else:
+#                 print("Refinement failed... Skipping to next query")
+#                 # TODO: Add some placeholders to return
+#                 break
 
-        else:
-            img_path_for_captions = img_path
+#         else:
+#             img_path_for_captions = img_path
 
-        # Check VQA score
-        vqa_score = get_vqa_score(img_path_for_captions, user_query, vqa_model)
+#         # Check VQA score
+#         vqa_score = get_vqa_score(img_path_for_captions, user_query, vqa_model)
 
-        if vqa_score < vqa_thresh and i != refine_iter - 1:
-            print("Doing another round of refinement...")
-            captions = get_captions(img_path_for_captions, processor, caption_model, human_feedback)
+#         if vqa_score < vqa_thresh and i != refine_iter - 1:
+#             print("Doing another round of refinement...")
+#             captions = get_captions(img_path_for_captions, processor, caption_model, human_feedback)
 
-        elif vqa_score < vqa_thresh and i == refine_iter - 1:
-            print("Could not refine enough to cross the VQA threshold that was set within the defined refinement iterations...")
+#         elif vqa_score < vqa_thresh and i == refine_iter - 1:
+#             print("Could not refine enough to cross the VQA threshold that was set within the defined refinement iterations...")
 
-        elif vqa_score >= vqa_thresh:
-            print(f"Refinement was successful for query {query_idx} in refine attempt {i}...")
-            break
+#         elif vqa_score >= vqa_thresh:
+#             print(f"Refinement was successful for query {query_idx} in refine attempt {i}...")
+#             break

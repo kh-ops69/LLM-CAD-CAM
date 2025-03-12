@@ -8,6 +8,8 @@ dataset_path = 'data/queries.txt'
 def run_sequence(comparison_query_path, macro_path):
     current_idx = 0
     with open(comparison_query_path, 'r') as queryFile:
+
+        # models need to be adjusted for the respective functions
         new_query = queryFile.readline()
         mainEntity = processQuery.retreive_entity(new_query)
         scrapedImage = webScrape.get_rough_visualizations(mainEntity)
@@ -37,7 +39,7 @@ def run_sequence(comparison_query_path, macro_path):
         # get_answers function is from llm.py which is responsible for putting information in function and asking llm to respond with code
         # direct_code_prompt contains all the elements that we have generated till now, including 
         # steps to build current model, additional information, original user query and examples to look from 
-        direct_code = processQuery.get_working_code(direct_code_prompt)
+        direct_code = processQuery.get_code(direct_code_prompt)
         direct_code = updatedUtils.remove_backticks(direct_code)
         direct_code_macro_file_path = f"{macro_path}/query_{current_idx}_direct_attempt_0.FCMacro"
         updatedUtils.write_macro(direct_code, direct_code_macro_file_path)
@@ -48,14 +50,20 @@ def run_sequence(comparison_query_path, macro_path):
 
         # platform is currently set to mac, specify it as argument here if running on windows (platform='windows')
         error_msg = updatedUtils.gui_sequence(direct_code_macro_file_path, img_path)
+
+        # at this point, code is written by LLM and executed in freeCAD software. We also have stored the error message and current output
+        # in appropriate variables.
+
+        # next, we need to check if error message is present then re-generate the code and try executing till code is generating output
         
         error_iter = 0
         # Get an executable code
         if error_msg is not None:
-            error, success_idx, new_code = processQuery.get_working_code(direct_code, error_msg, error_iter, initial_code=True)
+            # this function checks if code is executable on its own
+            error, success_idx, new_code = updatedUtils.get_executable_code(direct_code, error_msg, max_correction_iters=5)
             if error is None:
-                img_path_for_captions = f"results/images/query_{current_idx}_direct_attempt_{success_idx}.png"
-                code_for_refinement = new_code
+                # img_path_for_captions = f"results/images/query_{current_idx}_direct_attempt_{success_idx}.png"
+                # code_for_refinement = new_code
             else:
                 print("Could not get an executable code for this query... Skipping to next query")
         else:
@@ -67,3 +75,8 @@ def run_sequence(comparison_query_path, macro_path):
                 code_for_refinement = new_code
             else:
                 print("Could not get an executable code for this query... Skipping to next query")
+
+    # next point for modification to add other post processing items such as VQA similarity etc
+    # VQA similarity can again be replaced by local model score generation, granite3.2-vision model can be asked to generate similarity
+                
+    

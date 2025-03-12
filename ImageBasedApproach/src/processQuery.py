@@ -94,50 +94,49 @@ def return_steps_to_build(stepsString):
     # or access fields directly from the response object
     return response.message.content
 
-def get_working_code(collatedCodePrompt, errorMessage=None, initialAttempt=True, currentCode=None, max_iters=None):
-    if initialAttempt:
-        response: ChatResponse = chat(model='llama3.1', messages=[
-        {
-            'role': 'user',
-            'content': f"""{collatedCodePrompt}
-            """
-        },
-        ])
-        # print(response['message']['content'])
-        # or access fields directly from the response object
-        return response.message.content
-    else:
-        updated_code = gen_code
-        if direct_code:
-            for i in range(1, error_iter + 1):
-                error_prompt = get_error_prompt(updated_code, error)
-                updated_code = get_answers(model, api_key, error_prompt, temp, base_url)
-                updated_code = remove_backticks(updated_code)
-                macro_path = f"results/code/query_{query_idx}_direct_attempt_{i}.FCMacro"
-                write_macro(updated_code, macro_path)
-                # PyAutoGUI sequence
-                img_path = f"results/images/query_{query_idx}_direct_attempt_{i}.png"
-                error_msg = gui_sequence(macro_path, img_path)
+def get_code(collatedCodePrompt):
+    response: ChatResponse = chat(model='llama3.1', messages=[
+    {
+        'role': 'user',
+        'content': f"""{collatedCodePrompt}
+        """
+    },
+    ])
+    # print(response['message']['content'])
+    # or access fields directly from the response object
+    return response.message.content
+    # else:
+    #     updated_code = gen_code
+    #     if direct_code:
+    #         for i in range(1, error_iter + 1):
+    #             error_prompt = get_error_prompt(updated_code, error)
+    #             updated_code = get_answers(model, api_key, error_prompt, temp, base_url)
+    #             updated_code = remove_backticks(updated_code)
+    #             macro_path = f"results/code/query_{query_idx}_direct_attempt_{i}.FCMacro"
+    #             write_macro(updated_code, macro_path)
+    #             # PyAutoGUI sequence
+    #             img_path = f"results/images/query_{query_idx}_direct_attempt_{i}.png"
+    #             error_msg = gui_sequence(macro_path, img_path)
 
-                if error_msg is not None:
-                    continue
-                else:
-                    break
+    #             if error_msg is not None:
+    #                 continue
+    #             else:
+    #                 break
 
-        else:
-            for i in range(1, error_iter + 1):
-                error_prompt = get_error_prompt(updated_code, error)
-                updated_code = get_answers(model, api_key, error_prompt, temp, base_url)
-                updated_code = remove_backticks(updated_code)
-                macro_path = f"results/code/query_{query_idx}_refined_{refined_idx}_attempt_{i}.FCMacro"
-                write_macro(updated_code, macro_path)
-                # PyAutoGUI sequence
-                img_path = f"results/images/query_{query_idx}_refined_{refined_idx}_attempt_{i}.png"
-                error_msg = gui_sequence(macro_path, img_path)
+    #     else:
+    #         for i in range(1, error_iter + 1):
+    #             error_prompt = get_error_prompt(updated_code, error)
+    #             updated_code = get_answers(model, api_key, error_prompt, temp, base_url)
+    #             updated_code = remove_backticks(updated_code)
+    #             macro_path = f"results/code/query_{query_idx}_refined_{refined_idx}_attempt_{i}.FCMacro"
+    #             write_macro(updated_code, macro_path)
+    #             # PyAutoGUI sequence
+    #             img_path = f"results/images/query_{query_idx}_refined_{refined_idx}_attempt_{i}.png"
+    #             error_msg = gui_sequence(macro_path, img_path)
 
-                if error_msg is not None:
-                    continue
-                else:
-                    break
+    #             if error_msg is not None:
+    #                 continue
+    #             else:
+    #                 break
 
-        return error_msg, i, updated_code
+    #     return error_msg, i, updated_code
