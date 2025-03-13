@@ -1,5 +1,5 @@
 # LAD-LAM
-7th Semester project
+7th Semester project for LLM-assisted CAD-CAM Model Generation
 
 ## Abstract
 This repository takes inspiration from the original repository, [Query2CAD](https://github.com/akshay140601/Query2CAD?tab=readme-ov-file), and the subsequent research paper: [Query2CAD: Generating CAD models using natural language queries](https://arxiv.org/abs/2406.00144).
