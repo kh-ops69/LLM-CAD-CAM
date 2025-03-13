@@ -1,0 +1,33 @@
+import FreeCAD as App
+import Part
+
+# Create a new FreeCAD document
+doc = App.newDocument("HollowCone")
+
+# Define dimensions
+base_radius = 15  # Base radius of the solid cone (mm)
+height = 20       # Height of the solid cone (mm)
+hole_radius = 7   # Radius of the conical indentation (mm)
+hole_height = 18  # Depth of the conical indentation (mm)
+
+# Create the solid outer cone
+solid_cone = Part.makeCone(base_radius, 0, height)
+
+# Create the conical indentation
+hollow_cone = Part.makeCone(hole_radius, 0, hole_height)
+hollow_cone.translate(App.Vector(0, 0, 2))  # Align it properly inside the solid cone
+
+# Subtract the hollow part from the solid cone
+final_cone = solid_cone.cut(hollow_cone)
+
+# Add the final shape to the FreeCAD document
+part = doc.addObject("Part::Feature", "HollowCone")
+part.Shape = final_cone
+
+doc.recompute()
+
+# Export the model to STL format
+output_path = "/Users/krishhashia/LAD-LAM/AutomatedApproach/3D_Downloads/hollow_cone.stl"
+Part.export([part], output_path)
+
+print(f"Model saved to {output_path}")

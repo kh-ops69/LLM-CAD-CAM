@@ -1,0 +1,33 @@
+import FreeCAD as App
+import Part
+import Import
+
+# Create a new FreeCAD document
+doc = App.newDocument("ParallelPlates")
+
+# Define dimensions
+plate_size = 40  # Length and width of the plates (mm)
+plate_thickness = 3  # Thickness of the plates (mm)
+gap = 10  # Separation gap between the plates (mm)
+
+# Create the bottom plate
+bottom_plate = Part.makeBox(plate_size, plate_size, plate_thickness)
+
+# Create the top plate
+top_plate = Part.makeBox(plate_size, plate_size, plate_thickness)
+top_plate.translate(App.Vector(0, 0, plate_thickness + gap))
+
+# Combine both plates into a single shape
+parallel_plates = bottom_plate.fuse(top_plate)
+
+# Add the shape to the FreeCAD document
+part = doc.addObject("Part::Feature", "ParallelPlates")
+part.Shape = parallel_plates
+
+doc.recompute()
+
+# Define export path
+export_path = "/Users/krishhashia/LAD-LAM/AutomatedApproach/3D_Downloads/parallel_plates.stl"
+Import.export([part], export_path)
+
+print(f"Model saved to {export_path}")
