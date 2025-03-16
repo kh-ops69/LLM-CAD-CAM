@@ -1,0 +1,33 @@
+import FreeCAD as App
+import Part
+import Import
+
+# Create a new FreeCAD document
+doc = App.newDocument("RowingBoatHull")
+
+# Define key dimensions
+boat_length = 2000  # mm
+boat_width = 500    # mm (widest point)
+boat_height = 250   # mm
+seat_flat_length = 400  # mm
+
+# Define cross-sections of the hull
+sections = []
+for i in range(6):
+    x = (boat_length / 5) * i
+    if x < seat_flat_length or x > boat_length - seat_flat_length:
+        width = max(50, boat_width * (1 - abs((x - boat_length/2) / (boat_length/2))))
+        height = max(20, boat_height * (1 - abs((x - boat_length/2) / (boat_length/2))))
+    else:
+        width = 300  # Flat section width
+        height = 50  # Flat section height
+    
+    section = Part.makeEllipse(width / 2, height / 2)
+    section.translate(App.Vector(x, 0, 0))
+    sections.append(section)
+
+# Loft the sections together to form the hull
+hull = Part.makeLoft(sections, True, False, False)
+
+# Add the final shape to the FreeCAD document
+part =
