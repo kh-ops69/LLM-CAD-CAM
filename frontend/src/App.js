@@ -1,23 +1,24 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React from "react";
+import STLViewer from "./components/stl";
+// import {StlViewer} from "react-stl-viewer";
+const style = {
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+}
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ width: "100vw", height: "100vh" }}>
+      <STLViewer modelUrl="box.stl" />
+      hi
+      {/* <StlViewer
+            style={style}
+            orbitControls
+            shadows
+            url={"hollow_cone.stl"}
+        /> */}
+        bye
     </div>
   );
 }
