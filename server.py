@@ -8,8 +8,18 @@ import pyperclip
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Allow CORS for local frontend dev or all origins (adjust as needed)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or ["*"] to allow all
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Directory to save exported 3D models
 EXPORT_DIR = os.path.join(os.getcwd(), "3D_Downloads")
@@ -39,7 +49,8 @@ def get_code_from_api(query, export_path):
         Write a Python script for FreeCAD to generate a 3D model based on the user query: {query}.\
         Save the model as an STL file at this exact path: {export_path}.\
         Do NOT use GUI-dependent code. Return the python file in the side view editor so i can run it and test.
-    """
+        Also points to note, the module 'Mesh' has no attribute 'write' so generate the code keeping this in mind"""
+ 
     
     pyperclip.copy(prompt)
     pyautogui.hotkey("ctrl", "v")    

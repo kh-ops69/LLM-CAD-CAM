@@ -30,7 +30,7 @@ function Page1() {
         <div className='flex justify-center items-center flex-grow overflow-y-auto text-white text-5xl scrollbar-hide'>
           {!first_send_check&& <Typinggg/>}
         </div>
-        <div className='flex flex-col items-end mr-10 gap-2 mb-4 overflow-y-auto max-h-[50vh] p-2 scrollbar-hide'>
+        <div className='flex flex-col items-end mr-10 gap-2 mb-4 overflow-y-auto max-h-[75vh] p-2 scrollbar-hide'>
           {messages.map((sentence, index) => (
             <MessageBar key={index} sentence={sentence} />
           ))}
