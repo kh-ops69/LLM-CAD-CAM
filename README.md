@@ -6,13 +6,7 @@ This repository takes inspiration from the original repository, [Query2CAD](http
 
 Computer-Aided Design (CAD) engineers typically do not achieve their best prototypes in a single attempt. Instead, they iterate and refine their designs to achieve optimal solutions through multiple revisions. This traditional approach, while effective, is time-consuming and heavily reliant on skilled expertise. To address these challenges, the original authors introduced Query2CAD, a novel framework that attempted to automate CAD design generation and refinement.
 
-However, our LAD-LAM approach improves upon existing methods to yield better accuracy and model generation. It consists of two complementary novel approaches: an automated framework that utilizes a large language model to generate functional and fully-complete CAD macros, and executes them automatically in FreeCAD software, storing the resulting 3D models and code in the process. This has been carried out using the very capable [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/) framework in Python. Additionally, we also have an untested image-based descriptive framework that enables iterative refinements through visual feedback. The image-based approach refines CAD models using visual guidance, allowing for adjustments based on shape, proportions, and design intent, by performing the following operations:
-1. Extract required entity from user's original query.
-2. Web Scrape for high resolution images based on the retreived entity.
-3. Generate a comprehensive description with multiple commonly associated image properties, with the help of a vision model.
-4. Pass this description and highly-tuned prompts(with examples) to guide the code-generating model towards producing better and more reliable code.
-5. Run the code as an executable macro in FreeCAD and generate a screenshot of the model.
-6. If the object shown in the screenshot matches what the user originally asked for, stop the process, else iteratively improve upon the code using the same code-generation model. Use a threshold to define this behaviour, and use the previously used vision model to assess similairty between the screenshot's entity and the user's intended query objective. 
+However, our LAD-LAM approach improves upon existing methods to yield better accuracy and model generation. It consists of two complementary novel approaches: an automated framework that utilizes a large language model to generate functional and fully-complete CAD macros, and executes them automatically in FreeCAD software, storing the resulting 3D models and code in the process. This has been carried out using the very capable [PyAutoGUI](https://pyautogui.readthedocs.io/en/latest/) framework in Python.
 
 ## How to run the system
 1. Download and setup the [FreeCAD](https://github.com/FreeCAD/FreeCAD) software. The system has been tested on all platforms with varying screen sizes.
